@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Advanced Statistical Calculator • Offline Suite</title>
+
+<style>
+
+/* =========================================================
+   ROOT VARIABLES — CLEAN, NO CLASHES
+========================================================= */
+:root{
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #666666;
+  --soft: #f2f2f2;
+
+  --border-width: 2px;
+  --border-style: solid;
+  --border-color: var(--fg);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  --font-main: "Courier New", monospace;
+
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+
+  --transition: 0.25s ease;
+}
+
+/* DARK MODE */
+[data-theme="dark"]{
+  --bg: #0b0b0b;
+  --fg: #f5f5f5;
+  --muted: #9a9a9a;
+  --soft: #161616;
+}
+
+/* =========================================================
+   RESET & BASE
+========================================================= */
+*,
+*::before,
+*::after{
+  box-sizing: border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-main);
+  transition: background var(--transition), color var(--transition);
+}
+
+/* =========================================================
+   APP CONTAINER
+========================================================= */
+.app{
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--gap-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  border: var(--border-width) var(--border-style) var(--border-color);
+  min-height: 100vh;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+header{
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+header h1{
+  margin:0;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+}
+
+header .subtitle{
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: var(--gap-xs);
+}
+
+.header-controls{
+  display:flex;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   CONTROLS
+========================================================= */
+button,
+select,
+input,
+textarea{
+  background: var(--bg);
+  color: var(--fg);
+  border: var(--border-width) var(--border-style) var(--border-color);
+  font-family: var(--font-main);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+
+button:hover{
+  background: var(--soft);
+}
+
+button:active{
+  transform: translateY(1px);
+}
+
+select{
+  cursor: pointer;
+}
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+main{
+  display:grid;
+  grid-template-columns: 1fr 420px;
+  gap: var(--gap-lg);
+}
+
+@media(max-width:1000px){
+  main{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   INPUT AREA
+========================================================= */
+textarea{
+  width:100%;
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   RESULTS
+========================================================= */
+.results{
+  margin-top: var(--gap-md);
+  padding-top: var(--gap-md);
+  border-top: 1px dashed var(--fg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.result-row{
+  display:flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+/* =========================================================
+   HISTOGRAM
+========================================================= */
+.histogram{
+  margin-top: var(--gap-md);
+  height: 100px;
+  display:flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.bar{
+  flex:1;
+  background: var(--fg);
+  transition: height var(--transition);
+}
+
+/* =========================================================
+   PLAYER
+========================================================= */
+.player{
+  border: var(--border-width) var(--border-style) var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.player summary{
+  cursor:pointer;
+  padding: var(--gap-md);
+  font-weight: bold;
+}
+
+.player-content{
+  padding: var(--gap-md);
+  display:flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.tracklist{
+  display:flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.track{
+  padding: 6px;
+  cursor:pointer;
+  border-radius: var(--radius-sm);
+}
+
+.track:hover{
+  background: var(--soft);
+}
+
+.track[aria-current="true"]{
+  font-weight:bold;
+}
+
+/* =========================================================
+   PROGRESS BAR
+========================================================= */
+.progress{
+  height: 8px;
+  border: 1px solid var(--fg);
+  cursor: pointer;
+}
+
+.progress-fill{
+  height:100%;
+  width:0%;
+  background: var(--fg);
+  transition: width 0.1s linear;
+}
+
+/* =========================================================
+   SMALL TEXT
+========================================================= */
+.small{
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app" id="app">
+
+<header>
+  <div>
+    <h1>ADVANCED AVERAGE CALCULATOR</h1>
+    <div class="subtitle">
+      Offline • Statistical • Persistent • Single-File Utility
+    </div>
+  </div>
+
+  <div class="header-controls">
+    <button id="themeToggle">Toggle Theme</button>
+    <button id="exportJSON">Export JSON</button>
+  </div>
+</header>
+
+<main>
+
+<section>
+
+<textarea id="input"
+placeholder="Enter numbers separated by spaces or commas
+Example: 10, 25, 30  1e3  -5"></textarea>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+  <button id="calculate">Calculate</button>
+  <button id="liveMode">Live: Off</button>
+
+  <select id="stdMode">
+    <option value="pop">Population σ</option>
+    <option value="sample">Sample s</option>
+  </select>
+</div>
+
+<div class="results" id="results"></div>
+<div class="histogram" id="histogram"></div>
+
+</section>
+
+<aside>
+
+<details class="player">
+<summary>🎵 Offline Music Player</summary>
+
+<div class="player-content">
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button id="prev">◄</button>
+    <button id="playPause">►</button>
+    <button id="next">►</button>
+    <button id="shuffle">Shuffle</button>
+    <button id="repeat">Repeat</button>
+  </div>
+
+  <div class="progress" id="progress">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div id="nowPlaying" class="small">—</div>
+
+  <div class="tracklist" id="trackList"></div>
+
+</div>
+</details>
+
+</aside>
+
+</main>
+
+<audio id="audio"></audio>
+
+<script>
+(()=>{
+"use strict";
+
+/* =========================================================
+   STATE
+========================================================= */
+const state = {
+  theme: localStorage.theme || "light",
+  live: false,
+  index: Number(localStorage.track)||0,
+  repeat:false,
+  shuffle:false
+};
+
+const app = document.getElementById("app");
+app.dataset.theme = state.theme;
+
+/* =========================================================
+   THEME TOGGLE
+========================================================= */
+document.getElementById("themeToggle").onclick = ()=>{
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  app.dataset.theme = state.theme;
+  localStorage.theme = state.theme;
+};
+
+/* =========================================================
+   CALCULATOR LOGIC
+========================================================= */
+const input = document.getElementById("input");
+const results = document.getElementById("results");
+const hist = document.getElementById("histogram");
+const stdMode = document.getElementById("stdMode");
+
+function parseNumbers(text){
+  return text
+    .split(/[\s,]+/)
+    .map(Number)
+    .filter(n => Number.isFinite(n));
+}
+
+function calculateStats(arr){
+  const n = arr.length;
+  const sorted = [...arr].sort((a,b)=>a-b);
+  const sum = arr.reduce((a,b)=>a+b,0);
+  const mean = sum / n;
+
+  const variance =
+    arr.reduce((a,b)=>a + (b-mean)**2, 0) /
+    (stdMode.value === "pop" ? n : Math.max(1,n-1));
+
+  const q = p => sorted[Math.floor(p*(n-1))];
+
+  return {
+    count: n,
+    sum,
+    mean,
+    median: q(0.5),
+    q1: q(0.25),
+    q3: q(0.75),
+    min: sorted[0],
+    max: sorted[n-1],
+    std: Math.sqrt(variance)
+  };
+}
+
+function renderStats(arr){
+  if(!arr.length){
+    results.innerHTML = "";
+    hist.innerHTML = "";
+    return;
+  }
+
+  const stats = calculateStats(arr);
+
+  results.innerHTML = Object.entries(stats)
+    .map(([k,v])=>`
+      <div class="result-row">
+        <span>${k}</span>
+        <span>${v.toFixed(4)}</span>
+      </div>
+    `).join("");
+
+  renderHistogram(arr);
+}
+
+function renderHistogram(arr){
+  hist.innerHTML = "";
+  const bins = 12;
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const counts = Array(bins).fill(0);
+
+  arr.forEach(v=>{
+    const idx = Math.min(
+      bins-1,
+      Math.floor((v-min)/(max-min||1)*bins)
+    );
+    counts[idx]++;
+  });
+
+  const peak = Math.max(...counts);
+
+  counts.forEach(c=>{
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = (c/peak*100 || 2) + "%";
+    hist.appendChild(bar);
+  });
+}
+
+/* =========================================================
+   EVENTS
+========================================================= */
+document.getElementById("calculate").onclick = ()=>{
+  renderStats(parseNumbers(input.value));
+};
+
+document.getElementById("liveMode").onclick = e=>{
+  state.live = !state.live;
+  e.target.textContent = "Live: " + (state.live?"On":"Off");
+};
+
+input.oninput = ()=>{
+  if(state.live){
+    renderStats(parseNumbers(input.value));
+  }
+};
+
+document.getElementById("exportJSON").onclick = ()=>{
+  const data = parseNumbers(input.value);
+  if(!data.length) return;
+  navigator.clipboard.writeText(
+    JSON.stringify(calculateStats(data),null,2)
+  );
+};
+
+/* =========================================================
+   MUSIC PLAYER
+========================================================= */
+const audio = document.getElementById("audio");
+const trackList = document.getElementById("trackList");
+const nowPlaying = document.getElementById("nowPlaying");
+const progressFill = document.getElementById("progressFill");
+
+const tracks = Array.from({length:24},(_,i)=>`track-${i+1}.mp3`);
+
+tracks.forEach((t,i)=>{
+  const div = document.createElement("div");
+  div.className="track";
+  div.textContent=t;
+  div.onclick=()=>play(i);
+  trackList.appendChild(div);
+});
+
+function play(i){
+  state.index=i;
+  localStorage.track=i;
+  audio.src=tracks[i];
+  audio.play().catch(()=>{});
+  nowPlaying.textContent=tracks[i];
+  [...trackList.children].forEach((e,j)=>
+    e.setAttribute("aria-current",j===i)
+  );
+}
+
+document.getElementById("playPause").onclick = ()=>{
+  audio.paused ? play(state.index) : audio.pause();
+};
+
+document.getElementById("prev").onclick = ()=>{
+  play((state.index-1+tracks.length)%tracks.length);
+};
+
+document.getElementById("next").onclick = ()=>{
+  play((state.index+1)%tracks.length);
+};
+
+audio.ontimeupdate = ()=>{
+  progressFill.style.width =
+    (audio.currentTime/audio.duration*100||0)+"%";
+};
+
+audio.onended = ()=>{
+  if(state.repeat) play(state.index);
+  else play((state.index+1)%tracks.length);
+};
+
+document.getElementById("shuffle").onclick = ()=>{
+  state.shuffle=!state.shuffle;
+};
+
+document.getElementById("repeat").onclick = ()=>{
+  state.repeat=!state.repeat;
+};
+
+})();
+</script>
+
+</body>
+  </html>
