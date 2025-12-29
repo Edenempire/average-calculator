@@ -198,7 +198,7 @@ footer{
     <button id="themeToggle">Toggle Theme</button>
     <button id="clearInput">Clear</button>
     <button id="exportJSON">Hello World</button>
-    <button id="exportCSV">Analytics</button>
+    <button id="exportCSV">Hello</button>
   </div>
 </header>
 
@@ -378,7 +378,7 @@ exportCSV.onclick=()=>safe(()=>{
    AUDIO PLAYER
 ========================= */
 const audio=$('audio');
-const tracks=Array.from({length:24},(_,i)=>`track-${String(i+1).padStart(2,'0')}.mp3`);
+const tracks=Array.from({length:24},(_,i)=>String(i+1).padStart(2,'0')+'.mp3');
 
 tracks.forEach((t,i)=>{
   const d=document.createElement('div');
@@ -389,11 +389,13 @@ tracks.forEach((t,i)=>{
 });
 
 function play(i){
+  if(i<0||i>=tracks.length) return;
   state.index=i;
   localStorage.track=i;
   audio.src=tracks[i];
+  audio.load();
   audio.play().catch(()=>{});
-  nowPlaying.textContent=t;
+  nowPlaying.textContent=tracks[i];
   [...trackList.children].forEach((e,j)=>e.setAttribute('aria-current',j===i));
 }
 
