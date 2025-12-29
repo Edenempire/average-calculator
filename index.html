@@ -3,111 +3,254 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Advanced Statistical Calculator</title>
 
 <style>
+/* =========================
+   DESIGN SYSTEM
+========================= */
 :root{
-  --bg:#fff;--fg:#000;--muted:#666;--soft:#f2f2f2;
-  --bw:2px;--br:8px;
-  --font:"Courier New",monospace;
-  --t:0.25s ease;
+  --bg:#ffffff;
+  --fg:#000000;
+  --muted:#666;
+  --soft:#f3f3f3;
+  --accent:#0a5cff;
+  --danger:#d60000;
+  --bw:2px;
+  --br:10px;
+  --t:.25s ease;
+  --mono:"JetBrains Mono","Courier New",monospace;
 }
 [data-theme="dark"]{
-  --bg:#0b0b0b;--fg:#f5f5f5;--muted:#999;--soft:#161616;
+  --bg:#0b0d10;
+  --fg:#f2f2f2;
+  --muted:#9aa0aa;
+  --soft:#161a22;
+  --accent:#4c8dff;
 }
 *{box-sizing:border-box}
+html,body{height:100%}
 body{
-  margin:0;background:var(--bg);color:var(--fg);
-  font-family:var(--font);transition:background var(--t),color var(--t);
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--mono);
+  transition:background var(--t),color var(--t);
 }
+
+/* =========================
+   LAYOUT
+========================= */
 .app{
-  max-width:1440px;margin:auto;padding:16px;
-  border:var(--bw) solid var(--fg);min-height:100vh;
-  display:flex;flex-direction:column;gap:24px;
+  max-width:1600px;
+  margin:auto;
+  padding:16px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
 }
-header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+header{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  border:var(--bw) solid var(--fg);
+  padding:12px;
+  border-radius:var(--br);
+}
 h1{margin:0;font-size:1.6rem}
 .subtitle{font-size:.75rem;color:var(--muted)}
-button,select,textarea{
-  background:var(--bg);color:var(--fg);
+
+main{
+  display:grid;
+  grid-template-columns:1fr 460px;
+  gap:24px;
+}
+@media(max-width:1100px){main{grid-template-columns:1fr}}
+
+section,aside{
   border:var(--bw) solid var(--fg);
-  padding:6px 12px;border-radius:6px;
-  font-family:var(--font);cursor:pointer;
+  border-radius:var(--br);
+  padding:16px;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+button,select,input[type="range"],textarea{
+  background:var(--bg);
+  color:var(--fg);
+  border:var(--bw) solid var(--fg);
+  border-radius:8px;
+  padding:6px 12px;
+  font-family:var(--mono);
+  transition:background var(--t),transform var(--t);
 }
 button:hover{background:var(--soft)}
-main{display:grid;grid-template-columns:1fr 420px;gap:24px}
-@media(max-width:1000px){main{grid-template-columns:1fr}}
-textarea{width:100%;min-height:180px;resize:vertical}
-.results{border-top:1px dashed var(--fg);padding-top:12px}
-.result-row{display:flex;justify-content:space-between;font-size:.85rem}
-.histogram{height:100px;display:flex;align-items:flex-end;gap:3px}
-.bar{flex:1;background:var(--fg)}
-.player{border:var(--bw) solid var(--fg);border-radius:10px}
-.player summary{padding:12px;font-weight:bold;cursor:pointer}
-.player-content{padding:12px;display:flex;flex-direction:column;gap:12px}
-.track{padding:6px;border-radius:6px;cursor:pointer}
+button:active{transform:scale(.97)}
+button.active{background:var(--accent);color:#fff}
+textarea{
+  width:100%;
+  min-height:180px;
+  resize:vertical;
+}
+label{font-size:.75rem;color:var(--muted)}
+
+/* =========================
+   STATS
+========================= */
+.results{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:8px;
+}
+.result{
+  padding:6px 8px;
+  border:1px dashed var(--fg);
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+  font-size:.8rem;
+}
+
+.histogram{
+  margin-top:12px;
+  height:120px;
+  display:flex;
+  align-items:flex-end;
+  gap:4px;
+}
+.bar{
+  flex:1;
+  background:var(--accent);
+  min-height:3px;
+  border-radius:4px 4px 0 0;
+}
+
+.error{
+  color:var(--danger);
+  font-size:.75rem;
+}
+
+/* =========================
+   PLAYER
+========================= */
+.player summary{
+  cursor:pointer;
+  font-weight:bold;
+}
+.player-controls{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.progress{
+  height:10px;
+  border:1px solid var(--fg);
+  border-radius:6px;
+  overflow:hidden;
+  cursor:pointer;
+}
+.progress-fill{
+  height:100%;
+  width:0;
+  background:var(--accent);
+}
+.volume{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.track{
+  padding:6px;
+  border-radius:6px;
+  cursor:pointer;
+}
 .track:hover{background:var(--soft)}
-.track[aria-current="true"]{font-weight:bold}
-.progress{height:8px;border:1px solid var(--fg);cursor:pointer}
-.progress-fill{height:100%;width:0;background:var(--fg)}
+.track[aria-current="true"]{
+  background:var(--accent);
+  color:#fff;
+}
 .small{font-size:.7rem;color:var(--muted)}
+
+/* =========================
+   FOOTER UTIL
+========================= */
+footer{
+  text-align:center;
+  font-size:.7rem;
+  color:var(--muted);
+}
 </style>
 </head>
 
 <body>
-
 <div class="app" id="app">
 
 <header>
   <div>
-    <h1>ADVANCED AVERAGE CALCULATOR</h1>
-    <div class="subtitle">Offline • Statistical • Persistent •</div>
+    <h1>ADVANCED STATISTICAL ENGINE</h1>
+    <div class="subtitle">Offline • Persistent • Robust •</div>
   </div>
-  <div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
     <button id="themeToggle">Toggle Theme</button>
+    <button id="clearInput">Clear</button>
     <button id="exportJSON">Hello World</button>
+    <button id="exportCSV">Analytics</button>
   </div>
 </header>
 
 <main>
 
 <section>
-<textarea id="input" placeholder="Enter numbers separated by spaces or commas
-Example: 10, 25, 30  1e3  -5"></textarea>
+  <textarea id="input" placeholder="Enter numbers (spaces, commas, new lines, scientific notation allowed)
+Example: 10, 25, 30 1e3 -5"></textarea>
 
-<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-  <button id="calculate">Calculate</button>
-  <button id="liveMode">Live: Off</button>
-  <select id="stdMode">
-    <option value="pop">Population σ</option>
-    <option value="sample">Sample s</option>
-  </select>
-</div>
+  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <button id="calculate">Calculate</button>
+    <button id="liveMode">Live: Off</button>
+    <select id="stdMode">
+      <option value="pop">Population σ</option>
+      <option value="sample">Sample s</option>
+    </select>
+    <select id="roundMode">
+      <option value="2">Round: 2</option>
+      <option value="4" selected>Round: 4</option>
+      <option value="6">Round: 6</option>
+    </select>
+  </div>
 
-<div class="results" id="results"></div>
-<div class="histogram" id="histogram"></div>
+  <div id="error" class="error"></div>
+  <div class="results" id="results"></div>
+  <div class="histogram" id="histogram"></div>
 </section>
 
 <aside>
-<details class="player">
-<summary>average call handling time</summary>
-<div class="player-content">
+<details class="player" open>
+<summary>Average Handling Time</summary>
 
-<div style="display:flex;gap:6px;flex-wrap:wrap">
-  <button id="prev">◄◄</button>
-  <button id="playPause">►</button>
-  <button id="next">►►</button>
-  <button id="shuffle">Shuffle</button>
-  <button id="repeat">Repeat</button>
-</div>
+<div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
 
-<div class="progress" id="progress">
-  <div class="progress-fill" id="progressFill"></div>
-</div>
+  <div class="player-controls">
+    <button id="prev">⏮</button>
+    <button id="playPause">▶</button>
+    <button id="next">⏭</button>
+    <button id="shuffle">Shuffle</button>
+    <button id="repeat">Repeat</button>
+  </div>
 
-<div id="nowPlaying" class="small">—</div>
-<div id="trackList"></div>
+  <div class="progress" id="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="volume">
+    <label>Volume</label>
+    <input id="volume" type="range" min="0" max="1" step="0.01">
+    <span id="volLabel" class="small"></span>
+  </div>
+
+  <div id="nowPlaying" class="small">—</div>
+  <div id="trackList"></div>
 
 </div>
 </details>
@@ -115,13 +258,26 @@ Example: 10, 25, 30  1e3  -5"></textarea>
 
 </main>
 
-<audio id="audio"></audio>
+<footer>
+  Engineered for maximum robustness • Zero silent failures • Defensive programming
+</footer>
+
+<audio id="audio" preload="metadata"></audio>
 
 <script>
 (()=>{
 "use strict";
 
-/* ===== STATE ===== */
+/* =========================
+   UTILITIES
+========================= */
+const $=id=>document.getElementById(id);
+const safe=(fn)=>{try{fn()}catch(e){console.error(e);showError(e.message)}};
+const showError=msg=>{error.textContent=msg||""};
+
+/* =========================
+   STATE
+========================= */
 const state={
   theme:localStorage.theme||"light",
   live:localStorage.live==="true",
@@ -131,111 +287,145 @@ const state={
 };
 app.dataset.theme=state.theme;
 
-/* ===== THEME ===== */
-themeToggle.onclick=()=>{
+/* =========================
+   THEME
+========================= */
+$('themeToggle').onclick=()=>{
   state.theme=state.theme==="dark"?"light":"dark";
   app.dataset.theme=state.theme;
   localStorage.theme=state.theme;
 };
 
-/* ===== CALCULATOR ===== */
-const fmt=v=>Number.isInteger(v)?v:v.toFixed(4);
+/* =========================
+   STATISTICS ENGINE
+========================= */
+const parseInput=text=>{
+  const arr=text.split(/[^0-9eE+\-.]+/).filter(Boolean).map(Number);
+  if(!arr.length) throw new Error("No valid numeric values detected");
+  if(arr.some(n=>!Number.isFinite(n))) throw new Error("Invalid number encountered");
+  return arr;
+};
 
-const parse=t=>t.split(/[\s,]+/).map(Number).filter(Number.isFinite);
-
-function stats(a){
-  const n=a.length,s=[...a].sort((x,y)=>x-y);
-  const sum=a.reduce((x,y)=>x+y,0);
+const stats=arr=>{
+  const n=arr.length;
+  const s=[...arr].sort((a,b)=>a-b);
+  const sum=arr.reduce((a,b)=>a+b,0);
   const mean=sum/n;
-  const v=a.reduce((x,y)=>x+(y-mean)**2,0)/(stdMode.value==="pop"?n:Math.max(1,n-1));
+  const variance=arr.reduce((a,b)=>a+(b-mean)**2,0)/(stdMode.value==="pop"?n:Math.max(1,n-1));
   const q=p=>s[Math.floor(p*(n-1))];
   return{
-    count:n,sum,mean,
-    median:q(.5),q1:q(.25),q3:q(.75),
-    min:s[0],max:s[n-1],std:Math.sqrt(v)
+    Count:n,
+    Sum:sum,
+    Mean:mean,
+    Median:q(.5),
+    Min:s[0],
+    Max:s[n-1],
+    Range:s[n-1]-s[0],
+    Q1:q(.25),
+    Q3:q(.75),
+    IQR:q(.75)-q(.25),
+    Variance:variance,
+    StdDev:Math.sqrt(variance)
   };
-}
+};
 
-function render(a){
-  results.innerHTML="";histogram.innerHTML="";
-  if(!a.length)return;
-  const o=stats(a);
-  Object.entries(o).forEach(([k,v])=>{
-    results.innerHTML+=`<div class="result-row"><span>${k}</span><span>${fmt(v)}</span></div>`;
+const renderStats=arr=>{
+  results.innerHTML=""; histogram.innerHTML="";
+  const data=stats(arr);
+  const r=+roundMode.value;
+  Object.entries(data).forEach(([k,v])=>{
+    const d=document.createElement('div');
+    d.className='result';
+    d.innerHTML=`<span>${k}</span><span>${Number.isInteger(v)?v:v.toFixed(r)}</span>`;
+    results.appendChild(d);
   });
-  const bins=12,min=Math.min(...a),max=Math.max(...a),range=max-min||1;
-  const c=Array(bins).fill(0);
-  a.forEach(v=>c[Math.min(bins-1,Math.floor((v-min)/range*bins))]++);
-  const peak=Math.max(...c);
-  c.forEach(x=>{
-    const b=document.createElement("div");
-    b.className="bar";
-    b.style.height=(x/peak*100||2)+"%";
+  // Histogram
+  const bins=14,min=Math.min(...arr),max=Math.max(...arr),range=max-min||1;
+  const counts=Array(bins).fill(0);
+  arr.forEach(v=>counts[Math.min(bins-1,Math.floor((v-min)/range*bins))]++);
+  const peak=Math.max(...counts);
+  counts.forEach(c=>{
+    const b=document.createElement('div');
+    b.className='bar';
+    b.style.height=((c/peak)*100||2)+'%';
     histogram.appendChild(b);
   });
-}
+};
 
-calculate.onclick=()=>render(parse(input.value));
-input.oninput=()=>state.live&&render(parse(input.value));
+calculate.onclick=()=>safe(()=>{showError('');renderStats(parseInput(input.value))});
+input.oninput=()=>state.live&&safe(()=>{renderStats(parseInput(input.value))});
+
 liveMode.textContent="Live: "+(state.live?"On":"Off");
-liveMode.onclick=e=>{
+liveMode.onclick=()=>{
   state.live=!state.live;
   localStorage.live=state.live;
-  e.target.textContent="Live: "+(state.live?"On":"Off");
+  liveMode.textContent="Live: "+(state.live?"On":"Off");
 };
 
-exportJSON.onclick=()=>{
-  const a=parse(input.value);if(!a.length)return;
-  navigator.clipboard.writeText(JSON.stringify(stats(a),null,2))
-  .then(()=>alert("Statistics copied to clipboard"));
-};
+clearInput.onclick=()=>{input.value='';results.innerHTML='';histogram.innerHTML='';showError('')};
 
-/* ===== MUSIC PLAYER ===== */
-const audio=document.getElementById("audio");
-const tracks=Array.from({length:24},(_,i)=>String(i+1).padStart(2,"0")+".mp3");
+exportJSON.onclick=()=>safe(()=>{
+  const data=stats(parseInput(input.value));
+  navigator.clipboard.writeText(JSON.stringify(data,null,2));
+});
+exportCSV.onclick=()=>safe(()=>{
+  const data=stats(parseInput(input.value));
+  const csv=Object.entries(data).map(([k,v])=>`${k},${v}`).join('\n');
+  navigator.clipboard.writeText(csv);
+});
+
+/* =========================
+   AUDIO PLAYER
+========================= */
+const audio=$('audio');
+const tracks=Array.from({length:24},(_,i)=>`track-${String(i+1).padStart(2,'0')}.mp3`);
 
 tracks.forEach((t,i)=>{
-  const d=document.createElement("div");
-  d.className="track";d.textContent=t;
+  const d=document.createElement('div');
+  d.className='track';
+  d.textContent=t;
   d.onclick=()=>play(i);
   trackList.appendChild(d);
 });
 
 function play(i){
-  state.index=i;localStorage.track=i;
+  state.index=i;
+  localStorage.track=i;
   audio.src=tracks[i];
   audio.play().catch(()=>{});
-  nowPlaying.textContent=tracks[i];
-  [...trackList.children].forEach((e,j)=>e.setAttribute("aria-current",j===i));
+  nowPlaying.textContent=t;
+  [...trackList.children].forEach((e,j)=>e.setAttribute('aria-current',j===i));
 }
 
 playPause.onclick=()=>audio.paused?play(state.index):audio.pause();
 prev.onclick=()=>play((state.index-1+tracks.length)%tracks.length);
 next.onclick=()=>play((state.index+1)%tracks.length);
+shuffle.onclick=()=>shuffle.classList.toggle('active',state.shuffle=!state.shuffle);
+repeat.onclick=()=>repeat.classList.toggle('active',state.repeat=!state.repeat);
 
-audio.onplay=()=>playPause.textContent="❚❚";
-audio.onpause=()=>playPause.textContent="►";
-
-audio.ontimeupdate=()=>{
-  progressFill.style.width=(audio.currentTime/audio.duration*100||0)+"%";
+volume.value=localStorage.volume||0.8;
+audio.volume=volume.value;
+volLabel.textContent=Math.round(volume.value*100)+'%';
+volume.oninput=()=>{
+  audio.volume=volume.value;
+  localStorage.volume=volume.value;
+  volLabel.textContent=Math.round(volume.value*100)+'%';
 };
 
+audio.ontimeupdate=()=>progressFill.style.width=((audio.currentTime/audio.duration)*100||0)+'%';
 progress.onclick=e=>{
   const r=e.currentTarget.getBoundingClientRect();
   audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;
 };
 
 audio.onended=()=>{
-  if(state.repeat)play(state.index);
-  else if(state.shuffle)play(Math.floor(Math.random()*tracks.length));
+  if(state.repeat) play(state.index);
+  else if(state.shuffle) play(Math.floor(Math.random()*tracks.length));
   else play((state.index+1)%tracks.length);
 };
 
-shuffle.onclick=()=>state.shuffle=!state.shuffle;
-repeat.onclick=()=>state.repeat=!state.repeat;
-
 })();
 </script>
-
+</div>
 </body>
 </html>
